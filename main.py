@@ -1,9 +1,6 @@
 import sys, random
 from PyQt5.QtCore import QCoreApplication, Qt
-from PyQt5.QtGui import QIcon, QColor
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QAction, QMessageBox
-from PyQt5.QtWidgets import QCalendarWidget, QFontDialog, QColorDialog, QTextEdit, QFileDialog
-from PyQt5.QtWidgets import QCheckBox, QProgressBar, QComboBox, QLabel, QStyleFactory, QLineEdit, QInputDialog
+from PyQt5.QtWidgets import QWidget, QPushButton, QFileDialog, QLabel, QLineEdit, QTextEdit, QGridLayout, QApplication
 
 class Quote(object):
 
@@ -11,9 +8,7 @@ class Quote(object):
 		super(Quote, self).__init__()
 		self.list = []
 		self.index = 0
-
-	def addItem(self, item):
-		self.list.append(item)
+		self.filled = False
 
 	def addFromFile(self, name):
 		file = open(name, 'r', encoding="utf8")
@@ -25,42 +20,59 @@ class Quote(object):
 					quoteNext = False
 				elif line == "\n":
 					quoteNext = True
+		self.filled = True
 
 	def getRandomQuote(self):
 		return random.choice(self.list)
 
+	def isFilled(self):
+		return self.filled
 
-class Window(QMainWindow):
+
+class Window(QWidget):
 
 	def __init__(self):
 		super(Window, self).__init__()
 		self.setGeometry(50, 50, 500, 300)
-		self.setWindowTitle('Open File')
+		self.setWindowTitle('Kindle Highlight Viewer')
 		self.quotes = Quote()
 		self.home()
 
 	def home(self):
-		btn = QPushButton('Open File', self)
-		btn.clicked.connect(self.file_open)
+		self.grid = QGridLayout()
+		self.grid.setSpacing(10)
 
-		btn.resize(btn.sizeHint())  #set to acceptable size automatic
-		btn.move(0, 0)
+		fileBtn = QPushButton('Open File', self)
+		fileBtn.clicked.connect(self.file_open)
+
+		self.textView = QTextEdit()
+		self.textView.setReadOnly(True)
+		self.textView.textCursor().insertHtml('Open your Kindle "My Clippings.txt" file')
+
+		randomBtn = QPushButton('Random Quote', self)
+		randomBtn.clicked.connect(self.randomQuote)
+
+		self.grid.addWidget(fileBtn, 1, 0)
+		self.grid.addWidget(randomBtn, 2, 0)
+		self.grid.addWidget(self.textView, 3, 0)
+		self.setLayout(self.grid)
 		self.show()
 
-	def close_application(self):
-		print('whooo so custom')
-		sys.exit()
-		
 	def file_open(self):
-		# need to make name an tupple otherwise i had an error and app crashed
+		# name is a tupple otherwise the app crashed
 		name, _ = QFileDialog.getOpenFileName(self, 'Open File', options=QFileDialog.DontUseNativeDialog)
 		self.quotes.addFromFile(name)
-		print(self.quotes.getRandomQuote())
 
+	def randomQuote(self):
+		self.textView.clear()
+		if self.quotes.isFilled():
+			self.textView.textCursor().insertHtml(self.quotes.getRandomQuote())
+		else:
+			self.textView.textCursor().insertHtml('You need to load your Kindle "My Clippings.txt" file')
 
 def run():
 	app = QApplication(sys.argv)
-	Gui = Window()
+	gui = Window()
 	sys.exit(app.exec_())
 
 run()
