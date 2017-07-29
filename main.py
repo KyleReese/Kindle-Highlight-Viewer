@@ -59,7 +59,7 @@ class Window(QWidget):
 		self.show()
 
 	def file_open(self):
-		# name is a tupple otherwise the app crashed
+		# name is a tupple to prevent crash
 		name, _ = QFileDialog.getOpenFileName(self, 'Open File', options=QFileDialog.DontUseNativeDialog)
 		self.quotes.addFromFile(name)
 
