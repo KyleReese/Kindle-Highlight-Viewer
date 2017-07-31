@@ -65,7 +65,7 @@ class Window(QWidget):
 	def file_open(self):
 		# name is a tupple to prevent crash
 		name, _ = QFileDialog.getOpenFileName(self, 'Open File', options=QFileDialog.DontUseNativeDialog)
-		for highlight in parseHighlight('My Clippings.txt'):
+		for highlight in parseHighlight(name):
 			self.quotes.addQuote(highlight)
 		self.randomQuote()
 		# self.quotes.addFromFile(name)
