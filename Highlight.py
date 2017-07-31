@@ -1,33 +1,41 @@
+import random
 class Highlight(object):
 	def __init__(self):
 		super(Highlight, self).__init__()
 		self.title = ''
 		self.author = ''
 		self.text = ''
-		self.pageNum = 0
-		self.loc = 0
+		self.pageNum = ''
+		self.loc = ''
 		self.dateAdded = ''
 
-def parseHighlight(filename):
-	with open(filename, 'r',encoding='utf8') as infile:
-		line = ''
-		while True:
-			while not line.startswith('=========='): 
-				line = next(infile) 
-				continue  
+class Quote(object):
 
-			entry = []
-			for line in infile:
-				line = line.strip()
-				if line.startswith('=========='): break
-				if line:
-					entry.append(line)
+	def __init__(self):
+		super(Quote, self).__init__()
+		self.list = []
+		self.index = 0
+		self.filled = False
 
-			highlight = Highlight()
-			authorIndex = entry[0].rfind('(')
-			highlight.title = entry[0][:authorIndex]
-			highlight.author = entry[0][authorIndex:]
-			highlight.pageNum, highlight.loc, highlight.dateAdded = entry[1].split('|')
-			highlight.text = entry[2]
-			yield highlight
+	# def addFromFile(self, name):
+	# 	file = open(name, 'r', encoding="utf8")
+	# 	quoteNext = False
+	# 	with file:
+	# 		for line in file:
+	# 			if quoteNext == True:
+	# 				self.list.append(line)
+	# 				quoteNext = False
+	# 			elif line == "\n":
+	# 				quoteNext = True
+	# 	self.filled = True
+
+	def getRandomQuote(self):
+		return random.choice(self.list).text
+
+	def isFilled(self):
+		return self.filled
+
+	def addQuote(self, highlight):
+		self.list.append(highlight)
+		self.filled = True
 

@@ -1,33 +1,37 @@
 import sys, random
+from Highlight import Highlight, Quote
 from PyQt5.QtCore import QCoreApplication, Qt
 from PyQt5.QtWidgets import QWidget, QPushButton, QFileDialog, QLabel, QLineEdit, QTextEdit, QGridLayout, QApplication
 
-class Quote(object):
+def parseHighlight(filename):
+	with open(filename, 'r',encoding='utf8') as infile:
+		line = ''
+		while True:
+			while not line.startswith('=========='): 
+				line = next(infile) 
+				continue  
 
-	def __init__(self):
-		super(Quote, self).__init__()
-		self.list = []
-		self.index = 0
-		self.filled = False
+			entry = []
+			for line in infile:
+				line = line.strip()
+				if line.startswith('=========='): break
+				if line:
+					entry.append(line)
 
-	def addFromFile(self, name):
-		file = open(name, 'r', encoding="utf8")
-		quoteNext = False
-		with file:
-			for line in file:
-				if quoteNext == True:
-					self.list.append(line)
-					quoteNext = False
-				elif line == "\n":
-					quoteNext = True
-		self.filled = True
-
-	def getRandomQuote(self):
-		return random.choice(self.list)
-
-	def isFilled(self):
-		return self.filled
-
+			highlight = Highlight()
+			try:
+				authorIndex = entry[0].rfind('(')
+				highlight.title = entry[0][:authorIndex]
+				highlight.author = entry[0][authorIndex:]
+			except: pass
+			try:
+				highlight.pageNum, highlight.loc, highlight.dateAdded = entry[1].split('|')
+			except:	pass
+			try:
+				highlight.text = entry[2]
+			#If there is no highlight text break out of generator without yielding to stop iterating loop
+			except: break
+			yield highlight
 
 class Window(QWidget):
 
@@ -61,7 +65,10 @@ class Window(QWidget):
 	def file_open(self):
 		# name is a tupple to prevent crash
 		name, _ = QFileDialog.getOpenFileName(self, 'Open File', options=QFileDialog.DontUseNativeDialog)
-		self.quotes.addFromFile(name)
+		for highlight in parseHighlight('My Clippings.txt'):
+			self.quotes.addQuote(highlight)
+		self.randomQuote()
+		# self.quotes.addFromFile(name)
 
 	def randomQuote(self):
 		self.textView.clear()
